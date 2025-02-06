@@ -2,7 +2,7 @@ const { Client, GatewayIntentBits, Partials } = require('discord.js');
 require('dotenv').config();
 const fs = require('fs');
 
-// Initialize the Discord bot client
+// Initialize the bot
 const client = new Client({
     intents: [
         GatewayIntentBits.Guilds,
