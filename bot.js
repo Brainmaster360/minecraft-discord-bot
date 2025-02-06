@@ -1,5 +1,6 @@
 require('dotenv').config();
 const { Client, GatewayIntentBits, Collection } = require('discord.js');
+const fs = require('fs');
 
 const client = new Client({
     intents: [
@@ -22,14 +23,21 @@ if (!BOT_TOKEN) {
 console.log("🔄 Loading bot...");
 
 // Load commands dynamically
-const fs = require('fs');
 client.commands = new Collection();
 const commandFiles = fs.readdirSync('./commands').filter(file => file.endsWith('.js'));
 
 for (const file of commandFiles) {
-    const command = require(`./commands/${file}`);
-    client.commands.set(command.data.name, command);
-    console.log(`✅ Loaded command: ${command.data.name}`);
+    try {
+        const command = require(`./commands/${file}`);
+        if (!command.data || !command.data.name) {
+            console.warn(`⚠️ WARNING: Skipping invalid command file: ${file}`);
+            continue;
+        }
+        client.commands.set(command.data.name, command);
+        console.log(`✅ Loaded command: ${command.data.name}`);
+    } catch (error) {
+        console.error(`❌ ERROR loading command "${file}":`, error);
+    }
 }
 
 // Event: Bot Ready
@@ -58,6 +66,8 @@ client.on('interactionCreate', async interaction => {
 // Event: Guild Member Joins (For Custom Greetings)
 client.on('guildMemberAdd', async member => {
     console.log(`🎉 ${member.user.tag} joined the server!`);
+    
+    // Get stored welcome channel from a config (if you implement a DB later)
     const channel = member.guild.systemChannel;
     if (!channel) return;
 
