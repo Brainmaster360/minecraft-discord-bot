@@ -172,6 +172,5 @@ client.on('messageReactionAdd', async (reaction, user) => {
         }
     }
 });
-
 // ✅ Log in the bot
 client.login(process.env.BOT_TOKEN);
