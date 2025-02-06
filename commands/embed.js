@@ -20,12 +20,19 @@ module.exports = {
     async execute(interaction) {
         const title = interaction.options.getString('title');
         const description = interaction.options.getString('description');
-        const color = interaction.options.getString('color') || '#0099ff';
+        let color = interaction.options.getString('color') || '#0099FF';
+
+        // Ensure color is formatted correctly
+        if (!/^#?[0-9A-F]{6}$/i.test(color)) {
+            color = '#0099FF'; // Default color if invalid
+        } else {
+            color = color.replace(/^#/, ''); // Remove "#" if present
+        }
 
         const embed = new EmbedBuilder()
             .setTitle(title)
             .setDescription(description)
-            .setColor(color)
+            .setColor(`#${color}`) // Ensure Discord.js handles it correctly
             .setTimestamp();
 
         await interaction.reply({ embeds: [embed] });
