@@ -1,47 +1,45 @@
-const { Client, GatewayIntentBits, Partials } = require('discord.js');
 require('dotenv').config();
+const { Client, GatewayIntentBits, Collection } = require('discord.js');
 const fs = require('fs');
 
-// Load stored configuration
-const configPath = './config.json';
-const config = fs.existsSync(configPath) ? require(configPath) : {};
-
-// Initialize the bot
 const client = new Client({
     intents: [
         GatewayIntentBits.Guilds,
-        GatewayIntentBits.GuildMembers,
         GatewayIntentBits.GuildMessages,
         GatewayIntentBits.MessageContent,
-        GatewayIntentBits.GuildMessageReactions
-    ],
-    partials: [Partials.Message, Partials.Reaction, Partials.User]
+        GatewayIntentBits.GuildMembers
+    ]
 });
 
-// Load Commands
-const setupCommand = require('./commands/setup');
-const suggestionsSystem = require('./commands/suggestions');
-const setChannelCommand = require('./commands/setchannel');
+client.commands = new Collection();
 
-// Register events
-client.once('ready', () => {
-    console.log(`✅ Logged in as ${client.user.tag}`);
-});
+// Load command files
+const commandFiles = fs.readdirSync('./commands').filter(file => file.endsWith('.js'));
+for (const file of commandFiles) {
+    const command = require(`./commands/${file}`);
+    client.commands.set(command.data.name, command);
+}
 
-// Handle Slash Commands
+// Load event files
+const eventFiles = fs.readdirSync('./events').filter(file => file.endsWith('.js'));
+for (const file of eventFiles) {
+    const event = require(`./events/${file}`);
+    client.on(event.name, (...args) => event.execute(...args, client));
+}
+
+// Handle slash commands
 client.on('interactionCreate', async interaction => {
-    if (!interaction.isChatInputCommand()) return;
+    if (!interaction.isCommand()) return;
 
-    if (interaction.commandName === 'setup') {
-        await setupCommand.execute(interaction);
-    } else if (interaction.commandName === 'setchannel') {
-        await setChannelCommand.execute(interaction);
+    const command = client.commands.get(interaction.commandName);
+    if (!command) return;
+
+    try {
+        await command.execute(interaction);
+    } catch (error) {
+        console.error(error);
+        await interaction.reply({ content: 'There was an error executing this command!', ephemeral: true });
     }
 });
 
-// Handle Suggestion System
-client.on('messageCreate', (message) => suggestionsSystem.handleSuggestions(message, config));
-client.on('messageReactionAdd', (reaction, user) => suggestionsSystem.handleApproval(reaction, user, config));
-
-// Login bot with token from .env
 client.login(process.env.BOT_TOKEN);
