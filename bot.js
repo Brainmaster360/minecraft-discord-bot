@@ -2,6 +2,7 @@ const { Client, GatewayIntentBits, Partials } = require('discord.js');
 require('dotenv').config();
 const fs = require('fs');
 
+// Initialize the Discord bot client
 const client = new Client({
     intents: [
         GatewayIntentBits.Guilds,
@@ -22,14 +23,18 @@ client.once('ready', () => {
     console.log(`✅ Logged in as ${client.user.tag}`);
 });
 
-// Use commands
+// Handle Slash Commands
 client.on('interactionCreate', async interaction => {
     if (!interaction.isChatInputCommand()) return;
-    if (interaction.commandName === 'setup') await setupCommand.execute(interaction);
+
+    if (interaction.commandName === 'setup') {
+        await setupCommand.execute(interaction);
+    }
 });
 
-// Use suggestions system
+// Handle Suggestion System
 client.on('messageCreate', suggestionsSystem.handleSuggestions);
 client.on('messageReactionAdd', suggestionsSystem.handleApproval);
 
+// Login bot with token from .env
 client.login(process.env.BOT_TOKEN);
