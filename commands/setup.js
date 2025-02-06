@@ -1,22 +1,33 @@
-const { SlashCommandBuilder, EmbedBuilder } = require('discord.js');
+const { SlashCommandBuilder, PermissionFlagsBits } = require('discord.js');
 
 module.exports = {
     data: new SlashCommandBuilder()
         .setName('setup')
-        .setDescription('Shows the admin setup guide'),
-    async execute(interaction) {
-        const setupEmbed = new EmbedBuilder()
-            .setTitle("⚙️ Server Setup Guide")
-            .setDescription("Follow these steps to set up your Discord bot:")
-            .setColor(0x3498db)
-            .setThumbnail(interaction.client.user.displayAvatarURL())
-            .addFields(
-                { name: "1️⃣ Suggestions", value: "Users can submit suggestions with `/suggest`." },
-                { name: "2️⃣ Auto-Roles", value: "Users automatically get roles when verified." },
-                { name: "3️⃣ Advanced Commands", value: "Use `/help` for a list of available commands." }
-            )
-            .setFooter({ text: "Need help? Contact an admin." });
+        .setDescription('Setup suggestion channels')
+        .setDefaultMemberPermissions(PermissionFlagsBits.ManageChannels),
 
-        await interaction.reply({ embeds: [setupEmbed], ephemeral: true });
+    async execute(interaction) {
+        const guild = interaction.guild;
+        if (!guild) return interaction.reply({ content: "This command must be run in a server.", ephemeral: true });
+
+        try {
+            const suggestionChannel = await guild.channels.create({
+                name: 'suggestions',
+                type: 0, // 0 = Text Channel
+                reason: 'Created for user suggestions'
+            });
+
+            const reviewChannel = await guild.channels.create({
+                name: 'suggestion-review',
+                type: 0,
+                reason: 'Created for admins to review suggestions'
+            });
+
+            await interaction.reply({ content: `✅ Channels created:\n📢 **${suggestionChannel}** (for user suggestions)\n🔍 **${reviewChannel}** (for admin review).`, ephemeral: true });
+
+        } catch (error) {
+            console.error(error);
+            interaction.reply({ content: '⚠️ Error creating channels. Check my permissions.', ephemeral: true });
+        }
     }
 };
