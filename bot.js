@@ -2,6 +2,10 @@ const { Client, GatewayIntentBits, Partials } = require('discord.js');
 require('dotenv').config();
 const fs = require('fs');
 
+// Load stored configuration
+const configPath = './config.json';
+const config = fs.existsSync(configPath) ? require(configPath) : {};
+
 // Initialize the bot
 const client = new Client({
     intents: [
@@ -17,6 +21,7 @@ const client = new Client({
 // Load Commands
 const setupCommand = require('./commands/setup');
 const suggestionsSystem = require('./commands/suggestions');
+const setChannelCommand = require('./commands/setchannel');
 
 // Register events
 client.once('ready', () => {
@@ -29,12 +34,14 @@ client.on('interactionCreate', async interaction => {
 
     if (interaction.commandName === 'setup') {
         await setupCommand.execute(interaction);
+    } else if (interaction.commandName === 'setchannel') {
+        await setChannelCommand.execute(interaction);
     }
 });
 
 // Handle Suggestion System
-client.on('messageCreate', suggestionsSystem.handleSuggestions);
-client.on('messageReactionAdd', suggestionsSystem.handleApproval);
+client.on('messageCreate', (message) => suggestionsSystem.handleSuggestions(message, config));
+client.on('messageReactionAdd', (reaction, user) => suggestionsSystem.handleApproval(reaction, user, config));
 
 // Login bot with token from .env
 client.login(process.env.BOT_TOKEN);
