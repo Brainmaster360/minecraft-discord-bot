@@ -1,15 +1,11 @@
 const { EmbedBuilder } = require('discord.js');
 
 module.exports = {
-    async handleSuggestions(message) {
+    async handleSuggestions(message, config) {
         if (message.author.bot) return;
+        if (!config.suggestionChannel || message.channel.id !== config.suggestionChannel) return;
 
-        const suggestionChannelId = process.env.SUGGESTION_CHANNEL_ID;
-        const reviewChannelId = process.env.REVIEW_CHANNEL_ID;
-
-        if (message.channel.id !== suggestionChannelId) return;
-
-        const reviewChannel = message.guild.channels.cache.get(reviewChannelId);
+        const reviewChannel = message.guild.channels.cache.get(config.reviewChannel);
         if (!reviewChannel) return message.reply("⚠️ Review channel not found.");
 
         const suggestionEmbed = new EmbedBuilder()
@@ -25,15 +21,10 @@ module.exports = {
         message.reply("✅ Your suggestion has been submitted for review.");
     },
 
-    async handleApproval(reaction, user) {
-        if (user.bot) return;
+    async handleApproval(reaction, user, config) {
+        if (user.bot || !config.reviewChannel || reaction.message.channel.id !== config.reviewChannel) return;
 
-        const reviewChannelId = process.env.REVIEW_CHANNEL_ID;
-        const approvedChannelId = process.env.APPROVED_SUGGESTIONS_CHANNEL_ID;
-
-        if (reaction.message.channel.id !== reviewChannelId) return;
-
-        const approvedChannel = reaction.message.guild.channels.cache.get(approvedChannelId);
+        const approvedChannel = reaction.message.guild.channels.cache.get(config.approvedSuggestionsChannel);
         if (!approvedChannel) return;
 
         if (reaction.emoji.name === "✅") {
