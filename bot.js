@@ -24,8 +24,7 @@ client.once('ready', () => {
 
 // Use commands
 client.on('interactionCreate', async interaction => {
-    if (!interaction.isCommand()) return;
-    
+    if (!interaction.isChatInputCommand()) return;
     if (interaction.commandName === 'setup') await setupCommand.execute(interaction);
 });
 
