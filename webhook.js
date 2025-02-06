@@ -12,15 +12,14 @@ const server = http.createServer((req, res) => {
         });
 
         req.on('end', () => {
-            console.log('Received GitHub webhook event.');
+            console.log('🔄 GitHub Webhook Triggered!');
             
-            // Pull latest code
             exec('cd ~/minecraft-discord-bot && git pull origin main && pm2 restart minecraft-bot', (err, stdout, stderr) => {
                 if (err) {
                     console.error(`Error pulling from GitHub: ${stderr}`);
                     return res.end('Git Pull Failed');
                 }
-                console.log(`Git Pull Success: ${stdout}`);
+                console.log(`✅ Git Pull Success: ${stdout}`);
                 res.end('Git Pull Successful');
             });
         });
