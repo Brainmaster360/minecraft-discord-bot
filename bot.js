@@ -15,7 +15,6 @@ const client = new Client({
 
 // Load Commands
 const setupCommand = require('./commands/setup');
-const captchaSystem = require('./commands/captcha');
 const suggestionsSystem = require('./commands/suggestions');
 
 // Register events
@@ -29,10 +28,6 @@ client.on('interactionCreate', async interaction => {
     
     if (interaction.commandName === 'setup') await setupCommand.execute(interaction);
 });
-
-// Use verification & CAPTCHA
-client.on('interactionCreate', verifyCommand.handleInteraction);
-client.on('messageCreate', captchaSystem.handleMessage);
 
 // Use suggestions system
 client.on('messageCreate', suggestionsSystem.handleSuggestions);
