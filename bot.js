@@ -15,7 +15,6 @@ const client = new Client({
 
 // Load Commands
 const setupCommand = require('./commands/setup');
-const verifyCommand = require('./commands/verify');
 const captchaSystem = require('./commands/captcha');
 const suggestionsSystem = require('./commands/suggestions');
 
